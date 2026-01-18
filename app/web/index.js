@@ -43,25 +43,37 @@ function chat_send(message) {
     $.when(
         api('post', 'chat', {model:smod.val(), session:session})
     ).done(function(response) {
-        main.append($('<div/>', { class: 'assistant-wrap'}).append($('<div/>', { html:marked(response.message), class: 'assistant'})));
-
+        // First process storage
         let session = JSON.parse(localStorage.getItem(session_id));
         session.conversation[Date.now()] = {"role":"assistant", "content":response.message};
         localStorage.setItem(session_id, JSON.stringify(session));
+
+        // Add to main
+        main.append($('<div/>', { class: 'assistant-wrap'}).append($('<div/>', { html:marked.parse(response.message), class: 'assistant'})));
+        setTimeout(function() { main.scrollTop(main[0].scrollHeight); });
+        hljs.highlightAll();
     });
 
     // Append message to screen
     main.append($('<div/>', { class: 'user-wrap'}).append($('<div/>', { text:message, class: 'user'})));
+    setTimeout(function() { main.scrollTop(main[0].scrollHeight); });
     text.val('');
+    hljs.highlightAll();
 }
 
 
 // Document onload function
 $(document).ready( function () {
-    // Setup marked and highlightjs
+
+    // Setup marked with highlight.js
     marked.setOptions({
-        highlight: function(code, lang) {
-        return hljs.highlight(code, {language:lang}).value;
+        highlight: function (code, lang) {
+            // Check if language is supported by hljs
+            if (lang && hljs.getLanguage(lang)) {
+                return hljs.highlight(code, { language: lang }).value;
+            }
+            // Auto-detect language if not specified
+            return hljs.highlightAuto(code).value;
         }
     });
 
@@ -126,15 +138,17 @@ $(document).ready( function () {
 
             // Clear main
             main.html('')
-            main.append($('<div/>', { class: 'assistant-wrap'}).append($('<div/>', { html:marked('Good day &#128075;, how can I be of service?'), class: 'assistant'})));
+            main.append($('<div/>', { class: 'assistant-wrap'}).append($('<div/>', { html:marked.parse('Good day &#128075;, how can I be of service?'), class: 'assistant'})));
 
             // Load content to main 
             let session = JSON.parse(localStorage.getItem(session_id));
             for (ts in session.conversation) {
                 let entry = session.conversation[ts];
-                let content = entry.role == 'assistant' ? marked(entry.content) : entry.content;
+                let content = entry.role == 'assistant' ? marked.parse(entry.content) : entry.content;
                 main.append($('<div/>', { class: `${entry.role}-wrap`}).append($('<div/>', { html:content, class: entry.role})));
             }
+            setTimeout(function() { main.scrollTop(main[0].scrollHeight); });
+            hljs.highlightAll();
         }
     })
 
@@ -143,6 +157,6 @@ $(document).ready( function () {
     chat.append(text, wrap);
     $('body').append(main, chat, hist, info);
 
-    main.append($('<div/>', { class: 'assistant-wrap'}).append($('<div/>', { html:marked('Good day &#128075;, how can I be of service?'), class: 'assistant'})));
+    main.append($('<div/>', { class: 'assistant-wrap'}).append($('<div/>', { html:marked.parse('Good day &#128075;, how can I be of service?'), class: 'assistant'})));
 
 });

@@ -5,6 +5,7 @@ pre code.hljs {
 }
 code.hljs {
   padding: 3px 5px;
+  border-radius: 8px;
 }
 .hljs {
   background: #1e1e1e;
