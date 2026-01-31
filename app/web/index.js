@@ -110,15 +110,17 @@ $(document).ready( function () {
     // Interface element events
     text.on('keydown', function(event) {
         // Enter
-        if (event.key === 'Enter' && !event.ctrlKey) {            
+        if (event.key === 'Enter' && !event.shiftKey) {            
             event.preventDefault();
             chat_send(text.val());
         }
         // Ctrl + Enter
-        if (event.key === 'Enter' && event.ctrlKey) {
+        if (event.key === 'Enter' && event.shiftKey) {
             event.preventDefault();
-            let tmp = text.val();
-            text.val(tmp + '\n');
+            var tmp = $(this).val();
+            var cpos = this.selectionStart;
+            $(this).val(tmp.substring(0, cpos) + '\n' + tmp.substring(cpos));
+            this.selectionStart = this.selectionEnd = cpos + 1;
         }
     });
     send.on('click', function() {
