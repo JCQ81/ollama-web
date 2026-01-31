@@ -1,6 +1,6 @@
 # ollama-web
 
-An extremely basic quick'n'dirty web interface for Ollama, running in a single docker container.
+An extremely basic but functional web interface for Ollama, running in a single docker container.
 
 ![](./img/ollama-web-example.png)
 
@@ -10,18 +10,37 @@ ollama-web relies on:
 
 ### Setup
 
+Build:
+
 ```bash
 git clone https://github.com/JCQ81/ollama-web.git
 cd ollama-web
 docker build -t ollama-web .
+```
 
+Create volume:
+
+```bash
 docker volume create ollama-web
+```
+
+### Run
+
+On CPU:
+
+```bash
 docker run -d --name ollama-web -p 8088:8088 \
   -v ollama-web:/root/.ollama \
   ollama-web
 ```
 
-For GPU support, use: _docker run -d --gpus all ...._
+On GPU:
+
+```bash
+docker run -d --name ollama-web --gpus all -p 8088:8088 \
+  -v ollama-web:/root/.ollama \
+  ollama-web
+```
 
 ### Models
 
@@ -29,6 +48,8 @@ Make sure you pull at least one model from the [ollama library](https://ollama.c
 
 For pulling a model use the ollama cli
 
+Example:
+
 ```bash
-docker exec -t ollama-web ollama pull starcoder2:3b
+docker exec -t ollama-web ollama pull qwen2.5-coder:7b
 ```
