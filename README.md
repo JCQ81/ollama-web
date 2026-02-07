@@ -5,6 +5,7 @@ An extremely basic but functional web interface for Ollama, running in a single 
 ![](./img/ollama-web-example.png)
 
 ollama-web relies on:
+* [jquery](https://jquery.com)
 * [markedjs](https://github.com/markedjs/marked)
 * [highlightjs](https://github.com/highlightjs/highlight.js)
 
