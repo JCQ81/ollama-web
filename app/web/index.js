@@ -11,10 +11,11 @@ let wrap = $('<div/>', { class: 'wrap'});
 let smod = $('<select/>', { text:'', class: 'smod'});
 let send = $('<button/>', { text:'Send', class: 'send'});
 
-let hist = $('<div/>', { html:'&#129958;', class: 'hist'});
-let qdel = $('<div/>', { html:'&#10060;', class: 'qdel', title:'Delete current chat from history' });
-let qnew = $('<div/>', { html:'&#128956;', class: 'qnew', title:'Open a new chat' });
-let info = $('<div/>', { html:'&#9432;', class: 'info'});
+
+let hist = $('<img/>', { src:'img/icdrp.png', class: 'hist'});
+let qdel = $('<img/>', { src:'img/icbin.png', class: 'qdel', title:'Delete current chat from history' });
+let qnew = $('<img/>', { src:'img/icnew.png', class: 'qnew', title:'Open a new chat' });
+let info = $('<img/>', { src:'img/icinf.png', class: 'info', title:'Info (GitHub)'});
 
 let hist_popup = $('<div/>', { class: 'hist_popup'});
 
@@ -72,7 +73,7 @@ function chat_send(message) {
 }
 
 function copy_append(el) {
-    let copy = $('<div/>', { html:'&#128203;', class:'hist_copy' });
+    let copy = $('<img/>', { src:'img/iccpy.png', class:'hist_copy', title:'Copy to clipboard' });
     copy.on('click', function() {
         let copytext = el.parent().find('code:first').text();
         if (navigator.clipboard) {
@@ -94,10 +95,10 @@ function copy_append(el) {
 }
 
 function copy_animate(el) {
-    el.html('&#10004;');
+    el.attr("src", "img/icack.png");
     el.addClass('hist_copy_ok');
     setTimeout(function() {
-        el.html('&#128203;');
+        el.attr("src", "img/iccpy.png");
         el.removeClass('hist_copy_ok');
     }, 1600);
 }
@@ -191,8 +192,13 @@ $(document).ready( function () {
             hist_popup.empty().show();
             let midnight = new Date();
             midnight.setHours(0, 0, 0, 0);
-            for (let i = localStorage.length - 1; i >= 0; i--) {
-                let key = localStorage.key(i);
+            let histlist = [];
+            for (var i = 0; i < localStorage.length; i++) {
+                histlist.push(localStorage.key(i));
+            }
+            histlist.sort();
+            for (let i = histlist.length - 1; i >= 0; i--) {
+                let key = histlist[i];
                 let value = localStorage.getItem(key);        
                 if (/^\d/.test(key)) {
                     let ts = new Date(parseInt(key.split('-')[0]));
@@ -226,7 +232,9 @@ $(document).ready( function () {
     });
     qdel.on('click', function() {
         if (confirm('Are you sure you want to remove this chat?')) {
-            localStorage.removeItem(session_id);
+            if (session_id != null) {
+                localStorage.removeItem(session_id);
+            }
             session_id = null;
             main.html('')
             main.append($('<div/>', { class: 'assistant-wrap'}).append($('<div/>', { html:marked.parse('Good day &#128075;, how can I be of service?'), class: 'assistant'})));
@@ -242,6 +250,8 @@ $(document).ready( function () {
     $('body').append(main, chat, hist, hist_popup, qdel, qnew, info);
 
     main.append($('<div/>', { class: 'assistant-wrap'}).append($('<div/>', { html:marked.parse('Good day &#128075;, how can I be of service?'), class: 'assistant'})));
+
+    setTimeout(function() { text.focus(); }, 100);
 
 });
 
