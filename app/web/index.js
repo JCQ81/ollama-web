@@ -3,6 +3,7 @@
 var session_id = null;
 
 // Frame elements
+let menu = $('<div/>', { class: 'menu'});
 let main = $('<div/>', { class: 'main'});
 let chat = $('<div/>', { class: 'chat'});
 let text = $('<textarea/>', { text:'', class: 'text'});
@@ -10,7 +11,7 @@ let text = $('<textarea/>', { text:'', class: 'text'});
 let wrap = $('<div/>', { class: 'wrap'});
 let smod = $('<select/>', { text:'', class: 'smod'});
 let send = $('<button/>', { text:'Send', class: 'send'});
-
+let redo = $('<button/>', { html:'↻', class: 'redo'});
 
 let hist = $('<img/>', { src:'img/icdrp.png', class: 'hist'});
 let qdel = $('<img/>', { src:'img/icbin.png', class: 'qdel', title:'Delete current chat from history' });
@@ -31,7 +32,7 @@ function api(httpmethod, path, data) {
   return xhr;
 }
 
-function chat_send(message) {
+function chat_send(message = null) {
     now = Date.now();
 
     // Process session
@@ -41,7 +42,9 @@ function chat_send(message) {
     }
     console.log(session_id);
     let session = JSON.parse(localStorage.getItem(session_id));
-    session.conversation[now] = {"role":"user", "content":message};
+    if (message != null) {
+        session.conversation[now] = {"role":"user", "content":message};
+    }
     localStorage.setItem(session_id, JSON.stringify(session));
 
     // Process request
@@ -66,10 +69,29 @@ function chat_send(message) {
     });
 
     // Append message to screen
-    main.append($('<div/>', { class: 'user-wrap'}).append($('<div/>', { text:message, class: 'user'})));
-    setTimeout(function() { main.animate({ scrollTop: main[0].scrollHeight }, 500); });
-    text.val('');
-    hljs.highlightAll();
+    if (message != null) {
+        main.append($('<div/>', { class: 'user-wrap'}).append($('<div/>', { text:message, class: 'user'})));
+        setTimeout(function() { main.animate({ scrollTop: main[0].scrollHeight }, 500); });
+        text.val('');
+        hljs.highlightAll();
+    }
+}
+
+function chat_redo() {
+    if (session_id != null) {
+        if (confirm('This will permanently delete the last message.\nAre you sure you want to continue?')) {
+            let session = JSON.parse(localStorage.getItem(session_id));
+            let cnvkeys = Object.keys(session.conversation)
+            let lastkey = cnvkeys[cnvkeys.length - 1];
+            if (session.conversation[lastkey].role == "assistant") {
+                delete session.conversation[lastkey];
+                localStorage.setItem(session_id, JSON.stringify(session));
+                history_load(session_id);
+                chat_send(null);
+            }
+        }
+        
+    }
 }
 
 function copy_append(el) {
@@ -91,7 +113,6 @@ function copy_append(el) {
         }
     });
     el.parent().prepend(copy);
-
 }
 
 function copy_animate(el) {
@@ -183,6 +204,9 @@ $(document).ready( function () {
     send.on('click', function() {
         chat_send(text.val());
     });
+    redo.on('click', function() {
+        chat_redo(text.val());
+    });
     smod.on('change', function() {
         localStorage.setItem('_conf_model', smod.val());
     });
@@ -245,9 +269,9 @@ $(document).ready( function () {
     });
 
     // Create view
-    wrap.append(smod, '<br>', send);    
+    wrap.append(smod, '<br>', send, redo);    
     chat.append(text, wrap);
-    $('body').append(main, chat, hist, hist_popup, qdel, qnew, info);
+    $('body').append(main, chat, menu.append(hist, qdel, qnew), info, hist_popup);
 
     main.append($('<div/>', { class: 'assistant-wrap'}).append($('<div/>', { html:marked.parse('Good day &#128075;, how can I be of service?'), class: 'assistant'})));
 
